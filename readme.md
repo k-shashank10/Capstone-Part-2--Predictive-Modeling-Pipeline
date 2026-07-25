@@ -4,6 +4,42 @@ This part of the project builds a self-contained machine learning pipeline using
 
 ---
 
+## Project Structure
+
+```text
+Part 2/
+│
+├── Data/
+│   └── Raw Data/
+│       ├── matches.csv              # Historical IPL match records
+│       └── deliveries.csv           # Ball-by-ball match delivery data
+│
+├── models/
+│   └── ipl_winner_pipeline.pkl      # Serialized scikit-learn pipeline & LabelEncoder artifact
+│
+├── reports/
+│   └── figures/                     # Automated EDA & evaluation visualization charts
+│       ├── confusion_matrix.png
+│       ├── feature_importance.png
+│       ├── model_comparison.png
+│       ├── matches_per_season.png
+│       ├── top_venues.png
+│       ├── team_wins_distribution.png
+│       ├── outliers_before_distribution.png
+│       └── outliers_after_distribution.png
+│
+├── SRC/
+│   ├── data_loader.py               # Data ingestion, cleaning, team mapping & VIF check
+│   ├── pipeline_builder.py          # ColumnTransformer preprocessing pipeline builder
+│   ├── evaluate.py                  # Baseline model evaluation & automated plot generator
+│   └── predict.py                   # Script to load saved model and predict match winners
+│
+├── main.py                          # Master orchestration script (Training, Tuning, Saving)
+├── requirements.txt                 # Project dependencies
+└── README.md                        # Project documentation
+```
+---
+
 ## Task 1: Problem Framing
 
 ### Business Problem
@@ -25,14 +61,14 @@ To avoid data leakage, all in-game performance metrics like `result_margin`, `pl
 
 ---
 
-## Data Cleaning (Self-Contained)
+### 1. Data Cleaning (Self-Contained)
 
 Part 2 runs independently and does not import processed files from Part 1. It loads directly from the raw `matches.csv` file and applies basic cleaning:
 1. Removed matches where `winner` was marked as `'No Result'` (rained out or abandoned).
 2. Mapped older franchise names to their current team names (e.g., *Delhi Daredevils* to *Delhi Capitals*, *Kings XI Punjab* to *Punjab Kings*).
 
 ---
- ### Multi-Dataset Ingestion & Feature Engineering
+ ### 2. Multi-Dataset Ingestion & Feature Engineering
 To enrich pre-match feature vectors, historical delivery records from `deliveries.csv` were aggregated alongside `matches.csv`:
 * **`avg_city_1st_inn_runs` (Numeric Feature):** Calculated as the historical average 1st-innings total score recorded in a given host city across all prior matches.
 * **Leakage Avoidance:** In-match delivery stats for the active match being evaluated were strictly excluded.
@@ -71,16 +107,14 @@ Macro-F1 calculates the F1-score for each team independently and averages them e
 
 | Model | Accuracy | Macro Precision | Macro Recall | Macro F1 (Primary) | Weighted F1 |
 |---|---|---|---|---|---|
-| **Logistic Regression** | 0.526 | 0.481 | 0.492 | **0.485** | 0.518 |
-| **Decision Tree Classifier** | 0.468 | 0.435 | 0.441 | **0.437** | 0.465 |
-| **Random Forest Classifier** | 0.552 | 0.512 | 0.520 | **0.514** | 0.546 |
-| **XGBoost Classifier** | 0.538 | 0.498 | 0.505 | **0.501** | 0.531 |
+| **Logistic Regression** | **0.5780** | 0.5716 | 0.4676 | **0.4930** | 0.5715 |
+| **Decision Tree Classifier** | **0.5046** | 0.4940 | 0.5156 | **0.5018** | 0.5001 |
+| **Random Forest Classifier** | **0.5459** | 0.5072 | 0.4672 | **0.4693** | 0.5307 |
+| **XGBoost Classifier** | **0.5000** | 0.5223 | 0.5084 | **0.4980** | 0.4962 |
 
-Random Forest performed best among baseline models with a holdout Macro-F1 score of **0.514**.
-
+Decision Tree Classifier performed best among baseline models with a holdout Macro-F1 score of **0.5018**. Decision Tree Classifier performed best among baseline models on macro-F1 with a holdout score of 0.5018, while Logistic Regression achieved the highest baseline test accuracy at 0.5780.
 ---
 
-## Task 4: Pipeline Integration & Hyperparameter Tuning
 
 ## Task 4: Pipeline Integration, Cross-Validation & Hyperparameter Tuning
 
@@ -94,9 +128,8 @@ Because match wins across multi-class team targets can be slightly imbalanced, w
 
 Primary Metric: Macro-Averaged F1-Score (macro-F1)
 
-Baseline Pipeline Mean CV Score: 0.508
+Baseline Pipeline Mean CV Score: **0.3398**
 
-Standard Deviation Across Folds: ± 0.023
 
 ### 3. Hyperparameter Tuning (GridSearchCV)
 Using the unified pipeline as the estimator, we executed a cross-validated grid search (GridSearchCV) across two key tree-building parameters in the Random Forest model:
@@ -111,13 +144,13 @@ classifier__min_samples_split: [2, 5, 10] (Minimum samples required to split an 
 
 Best Hyperparameter Combination Found:
 
-n_estimators: 200
+* n_estimators: 200
+* max_depth: 10
+* min_samples_split: 5
 
-max_depth: 10
-
-min_samples_split: 5
-
-Tuned Model Cross-Validated Macro-F1 Score: 0.529 (an improvement of +0.021 over the default baseline pipeline).
+**Tuned Model Test PErformance** 
+1. Test Accuracy: **0.5413**
+2. Test Macro-F1 Score: **0.4665**
 
 ## Task 5: Model Ranking & Recommendation
 
@@ -127,16 +160,16 @@ All trained models were evaluated and ranked by our primary metric, **Macro-Aver
 
 | Rank | Model / Configuration | Primary Metric (Macro-F1) | Holdout Accuracy | Validation Method |
 |:---:|---|:---:|:---:|---|
-| **1** | **Tuned Random Forest (GridSearch)** | **0.529** | **0.565** | 5-Fold Stratified CV |
-| **2** | Baseline Random Forest | **0.514** | 0.552 | Holdout Test Set |
-| **3** | XGBoost Classifier | **0.501** | 0.538 | Holdout Test Set |
-| **4** | Logistic Regression | **0.485** | 0.526 | Holdout Test Set |
-| **5** | Decision Tree Classifier | **0.437** | 0.468 | Holdout Test Set |
+| **1** | **Decision Tree Classifier** | **0.5018** | **0.5046** | Holdout Test Set |
+| **2** | XGBoost ClassifierBaseline Random Forest | **0.4980** | 0.5000 | Holdout Test Set |
+| **3** | Logistic Regression | **0.4930** | 0.5780 | Holdout Test Set |
+| **4** | Random Forest Classifier | **0.4693** | 0.5459 | Holdout Test Set |
+| **5** | Tuned Random Forest (GridSearch) | **0.4665** | 0.5412 | 5-Fold Stratified CV |
 
 ---
 
 ### Deployment Recommendation
 
-I recommend deploying the **Tuned Random Forest Pipeline (`n_estimators=200`, `max_depth=10`, `min_samples_split=5`)**. 
+I recommend deploying the **Decision Tree Classifier** or the baseline **Random Forest Classifier** based on these specific test evaluations, as they achieved superior macro-averaged F1 balance across multi-class team targets for this split (with the Decision Tree securing a baseline macro-F1 of **0.5018** at **50.46% accuracy**, and Random Forest achieving a balanced macro-F1 of **0.4693** at **54.59% accuracy**). 
 
-Predicting cricket match winners purely from pre-match conditions is inherently noisy because crucial real-time factors—such as pitch deterioration, weather shifts, and individual player form—are unobserved in pre-game metadata. Setting `max_depth=10` keeps the decision trees from memorizing venue-specific noise while achieving the highest overall macro-averaged F1 score (**0.529**). Furthermore, exporting the entire preprocessing and model pipeline as a single `joblib` artifact (`best_ipl_winner_pipeline.pkl`) ensures future pre-match data can be processed and predicted without risking preprocessing mismatch or data leakage.
+Predicting cricket match winners purely from pre-match conditions is inherently noisy because crucial real-time factors—such as pitch deterioration, weather shifts, and individual player form—are unobserved in pre-game metadata. Exporting the entire preprocessing and model pipeline as a single `joblib` artifact (`ipl_winner_pipeline.pkl`) ensures future pre-match data can be processed and predicted without risking preprocessing mismatch or data leakage.
