@@ -173,3 +173,13 @@ All trained models were evaluated and ranked by our primary metric, **Macro-Aver
 I recommend deploying the **Decision Tree Classifier** or the baseline **Random Forest Classifier** based on these specific test evaluations, as they achieved superior macro-averaged F1 balance across multi-class team targets for this split (with the Decision Tree securing a baseline macro-F1 of **0.5018** at **50.46% accuracy**, and Random Forest achieving a balanced macro-F1 of **0.4693** at **54.59% accuracy**). 
 
 Predicting cricket match winners purely from pre-match conditions is inherently noisy because crucial real-time factors—such as pitch deterioration, weather shifts, and individual player form—are unobserved in pre-game metadata. Exporting the entire preprocessing and model pipeline as a single `joblib` artifact (`ipl_winner_pipeline.pkl`) ensures future pre-match data can be processed and predicted without risking preprocessing mismatch or data leakage.
+
+---
+
+##  References
+
+* **Lectures & Course Material:** 
+  * Machine Learning and Predictive Modeling Curriculum, Lectures, and Class Notes provided by **Masai Faculty**.
+  * Core concepts on data leakage prevention, feature scaling, categorical encoding, and pipeline architecture in Scikit-Learn.
+* **Datasets:**
+  * `matches.csv` & `deliveries.csv` — Historical Indian Premier League (IPL) match records and ball-by-ball delivery statistics shared as part of the Masai project repository.
