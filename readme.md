@@ -175,11 +175,44 @@ I recommend deploying the **Decision Tree Classifier** or the baseline **Random 
 Predicting cricket match winners purely from pre-match conditions is inherently noisy because crucial real-time factors—such as pitch deterioration, weather shifts, and individual player form—are unobserved in pre-game metadata. Exporting the entire preprocessing and model pipeline as a single `joblib` artifact (`ipl_winner_pipeline.pkl`) ensures future pre-match data can be processed and predicted without risking preprocessing mismatch or data leakage.
 
 ---
+##  Setup & Execution Instructions
+
+To run this predictive modeling pipeline locally from a clean environment, follow these steps:
+
+### Prerequisites
+* Ensure **Python 3.8+** is installed on your local machine.
+
+### 1. Repository Setup
+Clone the repository and ensure the raw data directory contains `matches.csv` and `deliveries.csv` inside `Part 2/Data/Raw Data/`.
+
+### 2. Install Dependencies
+Open your terminal or PowerShell, navigate to the project directory, and install the required Python packages using the requirements file:
+```bash
+pip install -r requirements.txt
+```
+### 3. Run the Orchestration Pipeline
+Execute the master orchestration script to load data, build the preprocessing pipelines, train and tune models, evaluate performance, and generate output reports and serialized model artifacts:
+```bash
+python main.py
+```
+### 4. 4. Run Predictions
+To load the saved model artifact (ipl_winner_pipeline.pkl) and predict match winners for new pre-match data, run the prediction script:
+```bash
+python SRC/predict.py
+```
+---
 
 ##  References
+**Official Documentation & Libraries**
+1. **Scikit-Learn Documentation:** For machine learning algorithms, pipeline architecture (Pipeline, ColumnTransformer), categorical encoders (OneHotEncoder), scalers (StandardScaler), and hyperparameter tuning (GridSearchCV). Available at: https://scikit-learn.org/stable/documentation.html
 
-* **Lectures & Course Material:** 
-  * Machine Learning and Predictive Modeling Curriculum, Lectures, and Class Notes provided by **Masai Faculty**.
-  * Core concepts on data leakage prevention, feature scaling, categorical encoding, and pipeline architecture in Scikit-Learn.
-* **Datasets:**
-  * `matches.csv` & `deliveries.csv` — Historical Indian Premier League (IPL) match records and ball-by-ball delivery statistics shared as part of the Masai project repository.
+2. **XGBoost Documentation**: For gradient boosted decision tree classifiers and hyperparameter configurations. Available at: https://xgboost.readthedocs.io/
+
+3. **Pandas & NumPy Documentation**: For data manipulation, multi-dataset aggregation, and feature matrix formatting. Available at: https://pandas.pydata.org/docs/ & https://numpy.org/doc/
+
+**Academic Class Notes & Faculty Materials**
+1. Lectures & Course Material: Machine Learning and Predictive Modeling Curriculum, Lectures, and Class Notes provided by Masai Faculty.
+2. Faculty Codes: Reference scripts, data leakage prevention patterns, pipeline integration techniques, and evaluation blueprints shared during practical lab hours.
+
+**Datasets & External Sources**
+IPL Match and Delivery Datasets: Historical Indian Premier League match records (matches.csv) and ball-by-ball delivery statistics (deliveries.csv) shared as part of the Masai project repository.
